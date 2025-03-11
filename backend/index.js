@@ -1,12 +1,20 @@
 const express = require("express");
 
 const userSignupLoginRouter = require("./routes/user");
-const { testMiddle } = require("./middlewares");
+const dbConnect = require("./connect");
 
 const app = express();
 
 const PORT = 8000;
 
+// Mongodb connect
+dbConnect()
+  .then(() => {
+    console.log("Connection successfully opened");
+  })
+  .catch(() => {
+    console.log("error connecting");
+  });
 // Middlewares
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
