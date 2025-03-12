@@ -1,11 +1,16 @@
-function testMiddle(req, res, next) {
-  console.log("Request was received");
-  next();
-}
+const { response } = require("express");
+const { getUser } = require("../services/jwtAuth");
 
 function restrictLoggedInUserOnly(req, res, next) {
-  // check logged in user here
+  const token = req?.headers?.authorization.split("Bearer ")[1];
+
+  try {
+    getUser(token);
+  } catch (error) {
+    return res.status(404).json({ message: "you have been logged out" });
+  }
+
   next();
 }
 
-module.exports = { testMiddle };
+module.exports = { restrictLoggedInUserOnly };
