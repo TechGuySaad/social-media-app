@@ -1,5 +1,14 @@
 const postsModel = require("../models/posts");
 
+async function handleGetPosts(req, res) {
+  try {
+    return res.status(200).json({ message: "Successfully made post" });
+  } catch (error) {
+    return res.status(404).json({
+      message: "You are wrong get a life",
+    });
+  }
+}
 async function handleCreatePost(req, res) {
   try {
     return res.status(200).json({ message: "Successfully made post" });
@@ -72,4 +81,5 @@ module.exports = {
   handleUnlikePost,
   handleCommentOnPost,
   handleDeleteComment,
+  handleGetPosts,
 };

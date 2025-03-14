@@ -8,13 +8,14 @@ const {
   handleUnlikePost,
   handleCommentOnPost,
   handleDeleteComment,
+  handleGetPosts,
 } = require("../controllers/post");
 
 const router = express.Router();
 
-// Create Post
+// Create Post and get posts
 
-router.route("/").post(handleCreatePost);
+router.route("/").get(handleGetPosts).post(handleCreatePost);
 
 // Delete post and Edit Post Description
 

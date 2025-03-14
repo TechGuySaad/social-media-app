@@ -1,9 +1,10 @@
 const express = require("express");
 
-const userSignupLoginRouter = require("./routes/user");
-const dbConnect = require("./connect");
 const { restrictLoggedInUserOnly } = require("./middlewares/");
-const { rolesModel } = require("./models/roles");
+const dbConnect = require("./connect");
+const userSignupLoginRouter = require("./routes/user");
+const postRouter = require("./routes/post");
+// const { rolesModel } = require("./models/roles");
 
 const app = express();
 
@@ -22,10 +23,9 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
 // Routes
-//
-app.use("/user", userSignupLoginRouter);
-
 // user restrictLoggedInUserOnly on any route now that you want the user to be restricted to without the jwt token
+app.use("/user", userSignupLoginRouter);
+app.use("/posts", postRouter);
 
 app.listen(PORT, (err) => {
   console.log(`Server is running on Port ${PORT}`);
