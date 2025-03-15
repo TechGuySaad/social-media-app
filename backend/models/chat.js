@@ -10,10 +10,3 @@ const chatSchema = new mongoose.Schema(
 const chatModel = mongoose.model("chat", chatSchema);
 
 module.exports = chatModel;
-
-// 5. Chat Collection
-// Manages conversations between users.
-
-// chatId
-// lastMessageId
-// // updatedAt
