@@ -4,7 +4,7 @@ const {
   handleEditPost,
   handleDeletePost,
   handleLikePost,
-  handleLikePost,
+
   handleUnlikePost,
   handleAddComment,
 
@@ -16,8 +16,9 @@ const {
 const router = express.Router();
 
 router.route("/").post(handleCreatePost).get(handleGetPosts);
+
 router
-  .route("/posts/:postId")
+  .route("/:postId")
   .get(handleGetPost)
   .put(handleEditPost)
   .delete(handleDeletePost);

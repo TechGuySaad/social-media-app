@@ -3,7 +3,7 @@ const { setUser, getUser } = require("../services/jwtAuth");
 const bcrypt = require("bcrypt");
 
 async function handleUserSignup(req, res) {
-  const { firstName, lastName, email, password } = req?.body;
+  const { firstName, lastName, email, password, bio } = req?.body;
 
   const saltRounds = 10;
   const hashPassword = await bcrypt.hash(password, saltRounds);
@@ -13,6 +13,7 @@ async function handleUserSignup(req, res) {
       firstName,
       lastName,
       email,
+      bio,
       password: await hashPassword,
     });
 
@@ -40,8 +41,10 @@ async function handleUserLogin(req, res) {
 
   if (!isMatch) return res.status(404).json({ message: "Invalid credentials" });
   const token = setUser({
+    userId: user._id,
     email: user.email,
   });
+  req.user = user;
 
   return res
     .header("Authorization", `Bearer ${token}`)

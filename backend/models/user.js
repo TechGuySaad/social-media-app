@@ -21,7 +21,7 @@ const userSchema = new mongoose.Schema(
       required: true,
     },
 
-    profilePicture: { type: String },
+    profilePicture: { type: String, default: "this is profile picture" },
     bio: { type: String },
   },
   { timestamps: true }

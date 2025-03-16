@@ -26,7 +26,7 @@ app.use(express.json());
 
 // Routes
 app.use("/api/auth", userSignupLoginRouter);
-app.use("/api/posts", postRouter);
+app.use("/api/posts", restrictLoggedInUserOnly, postRouter);
 app.use("/api/notifications", notificationRouter);
 app.use("/api/users/:userId", followRouter);
 app.use("/api/chats", chatRouter);
