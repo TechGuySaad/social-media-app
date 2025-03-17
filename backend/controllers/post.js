@@ -1,6 +1,6 @@
 const postsModel = require("../models/posts");
 const likeModel = require("../models/likes");
-
+const commentModel = require("../models/comment");
 // Posts
 async function handleCreatePost(req, res) {
   const { content } = req.body;
@@ -140,7 +140,7 @@ async function handleUnlikePost(req, res) {
 }
 
 async function handleGetAllLikes(req, res) {
-  const userId = req?.user?.userId;
+  // gets all likes on a post
   const postId = req?.params?.postId;
 
   try {
@@ -157,30 +157,52 @@ async function handleGetAllLikes(req, res) {
 }
 
 // Comments
-async function handleGetComments(req, res) {
+async function handleAddComment(req, res) {
+  const userId = req?.user?.userId;
+  const postId = req?.params?.postId;
+  const { content } = req?.body;
   try {
-    return res.status(200).json({ message: "Successfully made post" });
+    const comment = await commentModel.create({ userId, postId, content });
+    return res
+      .status(200)
+      .json({ message: "Successfully added comment", comment });
   } catch (error) {
     return res.status(404).json({
-      message: "You are wrong get a life",
+      message: "Unable to comment",
     });
   }
 }
-async function handleAddComment(req, res) {
+async function handleGetComments(req, res) {
+  // gets all comments on a post
+  const postId = req?.params?.postId;
+
   try {
-    return res.status(200).json({ message: "Successfully made post" });
+    const allComments = await commentModel.find({ postId });
+    return res
+      .status(200)
+      .json({ message: "Successfully got all comments", allComments });
   } catch (error) {
     return res.status(404).json({
-      message: "You are wrong get a life",
+      message: "Error getting comments",
     });
   }
 }
 async function handleDeleteComment(req, res) {
+  const userId = req?.user?.userId;
+  const postId = req?.params?.postId;
+  const commentId = req?.params?.commentId;
   try {
-    return res.status(200).json({ message: "Successfully made post" });
+    const deletedComment = await commentModel.findOneAndDelete({
+      _id: commentId,
+      postId,
+      userId,
+    });
+    return res
+      .status(200)
+      .json({ message: "Successfully deleted comment", deletedComment });
   } catch (error) {
     return res.status(404).json({
-      message: "You are wrong get a life",
+      message: "Problem deleting comment",
     });
   }
 }
