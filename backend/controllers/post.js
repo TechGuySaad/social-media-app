@@ -1,4 +1,5 @@
 const postsModel = require("../models/posts");
+const likeModel = require("../models/likes");
 
 // Posts
 async function handleCreatePost(req, res) {
@@ -78,22 +79,79 @@ async function handleDeletePost(req, res) {
   }
 }
 
-// Like Unlike posts
+// Like / Unlike posts
 async function handleLikePost(req, res) {
+  const userId = req?.user?.userId;
+  const postId = req?.params?.postId;
+
   try {
-    return res.status(200).json({ message: "Successfully made post" });
+    await likeModel.create({ userId, postId });
+
+    const likes = await likeModel.find({ postId: postId });
+
+    const countLikes = likes?.length;
+
+    const updatedPost = await postsModel.findOneAndUpdate(
+      { _id: postId },
+      { likesCount: countLikes },
+      { new: true }
+    );
+
+    return res
+      .status(200)
+      .json({ message: "Successfully liked post", postId: updatedPost });
   } catch (error) {
     return res.status(404).json({
-      message: "You are wrong get a life",
+      message: "There was a problem liking the post",
     });
   }
 }
+
 async function handleUnlikePost(req, res) {
+  const userId = req?.user?.userId;
+
+  const postId = req?.params?.postId;
+
   try {
-    return res.status(200).json({ message: "Successfully made post" });
+    const deletedLike = await likeModel.findOneAndDelete({
+      postId: postId,
+      userId: userId,
+    });
+    console.log(deletedLike);
+
+    const likes = await likeModel.find({ postId: postId });
+
+    const countLikes = likes?.length;
+
+    const updatedPost = await postsModel.findOneAndUpdate(
+      { _id: postId },
+      { likesCount: countLikes },
+      { new: true }
+    );
+
+    return res
+      .status(200)
+      .json({ message: "Successfully unliked post", updatedPost });
   } catch (error) {
     return res.status(404).json({
-      message: "You are wrong get a life",
+      message: "there was something wrong with unliking the post",
+    });
+  }
+}
+
+async function handleGetAllLikes(req, res) {
+  const userId = req?.user?.userId;
+  const postId = req?.params?.postId;
+
+  try {
+    const likes = await likeModel.find({ postId: postId });
+
+    return res
+      .status(200)
+      .json({ message: "Successfully fetched likes", likes });
+  } catch (error) {
+    return res.status(404).json({
+      message: "There was a problem fetching all likes",
     });
   }
 }
@@ -138,4 +196,5 @@ module.exports = {
   handleGetPosts,
   handleGetPost,
   handleGetComments,
+  handleGetAllLikes,
 };

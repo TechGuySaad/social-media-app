@@ -11,6 +11,7 @@ const {
   handleGetPosts,
   handleGetPost,
   handleGetComments,
+  handleGetAllLikes,
 } = require("../controllers/post");
 
 const router = express.Router();
@@ -24,7 +25,7 @@ router
   .delete(handleDeletePost);
 
 // Like unlike
-router.route("/:postId/likes").get();
+router.route("/:postId/likes").get(handleGetAllLikes);
 router.route("/:postId/like").post(handleLikePost).delete(handleUnlikePost);
 
 // Comments
