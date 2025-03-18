@@ -1,55 +1,83 @@
 const userModel = require("../models/user");
-const { setUser, getUser } = require("../services/jwtAuth");
+const { setUser } = require("../services/jwtAuth");
 const bcrypt = require("bcrypt");
 
+// User Signup
 async function handleUserSignup(req, res) {
-  const { firstName, lastName, email, password, bio } = req?.body;
-
-  const saltRounds = 10;
-  const hashPassword = await bcrypt.hash(password, saltRounds);
-
   try {
+    const { firstName, lastName, email, password, bio } = req?.body;
+
+    if (!firstName || !lastName || !email || !password) {
+      return res.status(400).json({ message: "All fields are required" });
+    }
+
+    const existingUser = await userModel.findOne({ email });
+    if (existingUser) {
+      return res.status(409).json({ message: "User already exists" });
+    }
+
+    const saltRounds = 10;
+    const hashPassword = await bcrypt.hash(password, saltRounds);
+
     const user = await userModel.create({
       firstName,
       lastName,
       email,
       bio,
-      password: await hashPassword,
+      password: hashPassword,
     });
 
-    return res
-      .status(201)
-      .json({ status: "success", message: "Succesfully signed up" });
+    return res.status(201).json({
+      status: "success",
+      message: "Successfully signed up",
+      user: { id: user._id, firstName, lastName, email, bio },
+    });
   } catch (error) {
-    return res.status(400).json({
-      status: "Either user exists or problem with input",
-      error: error,
+    return res.status(500).json({
+      message: "Error signing up",
+      error: error.message,
     });
   }
 }
 
+// User Login
 async function handleUserLogin(req, res) {
-  const { email, password } = req?.body;
+  try {
+    const { email, password } = req?.body;
 
-  const user = await userModel.findOne({
-    email: email,
-  });
+    if (!email || !password) {
+      return res
+        .status(400)
+        .json({ message: "Email and password are required" });
+    }
 
-  if (!user) return res.status(404).json({ message: "user not found" });
+    const user = await userModel.findOne({ email });
 
-  const isMatch = await bcrypt.compare(password, user.password);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
 
-  if (!isMatch) return res.status(404).json({ message: "Invalid credentials" });
-  const token = setUser({
-    userId: user._id,
-    email: user.email,
-  });
-  req.user = user;
+    const isMatch = await bcrypt.compare(password, user.password);
 
-  return res
-    .header("Authorization", `Bearer ${token}`)
-    .status(200)
-    .json({ message: "login successful" });
+    if (!isMatch) {
+      return res.status(401).json({ message: "Invalid credentials" });
+    }
+
+    const token = setUser({ userId: user._id, email: user.email });
+
+    return res
+      .header("Authorization", `Bearer ${token}`)
+      .status(200)
+      .json({
+        message: "Login successful",
+        token,
+        user: { id: user._id, email },
+      });
+  } catch (error) {
+    return res
+      .status(500)
+      .json({ message: "Error logging in", error: error.message });
+  }
 }
 
 module.exports = { handleUserSignup, handleUserLogin };

@@ -1,95 +1,124 @@
 const postsModel = require("../models/posts");
 const likeModel = require("../models/likes");
 const commentModel = require("../models/comment");
-// Posts
+
+// Create a Post
 async function handleCreatePost(req, res) {
-  const { content } = req.body;
-  const userId = req?.user?.userId;
   try {
-    const newPost = await postsModel.create({
-      userId,
-      content,
-    });
-    return res.status(200).json({ message: "Successfully posted", newPost });
+    const { content } = req.body;
+    const userId = req?.user?.userId;
+
+    if (!userId || !content) {
+      return res
+        .status(400)
+        .json({ message: "User ID and content are required" });
+    }
+
+    const newPost = await postsModel.create({ userId, content });
+
+    return res.status(201).json({ message: "Successfully posted", newPost });
   } catch (error) {
-    return res.status(404).json({
-      message: "You were unable to create a new post",
-    });
+    return res.status(500).json({ message: "Error creating post", error });
   }
 }
 
+// Get all posts of a user
 async function handleGetPosts(req, res) {
-  const userId = req?.user?.userId;
-  // Get posts of a user
   try {
+    const userId = req?.user?.userId;
+    if (!userId) {
+      return res.status(400).json({ message: "User ID is required" });
+    }
+
     const posts = await postsModel.find({ userId });
+
     return res
       .status(200)
-      .json({ message: "Successfully got all posts", posts });
+      .json({ message: "Successfully retrieved posts", posts });
   } catch (error) {
-    return res.status(404).json({
-      message: "No posts exist for this user or user doesnt exist",
-    });
+    return res.status(500).json({ message: "Error retrieving posts", error });
   }
 }
+
+// Get a single post
 async function handleGetPost(req, res) {
-  const postId = req?.params?.postId;
   try {
+    const postId = req?.params?.postId;
+    if (!postId) {
+      return res.status(400).json({ message: "Post ID is required" });
+    }
+
     const post = await postsModel.findOne({ _id: postId });
+    if (!post) return res.status(404).json({ message: "Post not found" });
+
     return res.status(200).json({ message: "Successfully fetched post", post });
   } catch (error) {
-    return res.status(404).json({
-      message: "The post does not exist",
-    });
+    return res.status(500).json({ message: "Error retrieving post", error });
   }
 }
 
+// Edit a Post
 async function handleEditPost(req, res) {
-  const postId = req?.params?.postId;
-  const { content } = req?.body;
-
   try {
+    const postId = req?.params?.postId;
+    const { content } = req?.body;
+
+    if (!postId || !content) {
+      return res
+        .status(400)
+        .json({ message: "Post ID and content are required" });
+    }
+
     const editedPost = await postsModel.findOneAndUpdate(
       { _id: postId },
-      { content: content },
+      { content },
       { new: true }
     );
+
+    if (!editedPost) return res.status(404).json({ message: "Post not found" });
+
     return res
       .status(200)
       .json({ message: "Successfully edited post", editedPost });
   } catch (error) {
-    return res.status(404).json({
-      message: "There was something wrong in editing post",
-      error,
-    });
+    return res.status(500).json({ message: "Error editing post", error });
   }
 }
 
+// Delete a Post
 async function handleDeletePost(req, res) {
-  const postId = req?.params?.postId;
   try {
+    const postId = req?.params?.postId;
+    if (!postId) {
+      return res.status(400).json({ message: "Post ID is required" });
+    }
+
     const deletedPost = await postsModel.findOneAndDelete({ _id: postId });
-    if (!deletedPost) throw new Error("Such post does not exist");
+
+    if (!deletedPost)
+      return res.status(404).json({ message: "Post not found" });
+
     return res.status(200).json({ message: "Successfully deleted the post" });
   } catch (error) {
-    return res.status(404).json({
-      message: "Unable to delete post",
-      error: error.message,
-    });
+    return res.status(500).json({ message: "Error deleting post", error });
   }
 }
 
-// Like / Unlike posts
+// Like a Post
 async function handleLikePost(req, res) {
-  const userId = req?.user?.userId;
-  const postId = req?.params?.postId;
-
   try {
+    const userId = req?.user?.userId;
+    const postId = req?.params?.postId;
+
+    if (!userId || !postId) {
+      return res
+        .status(400)
+        .json({ message: "User ID and Post ID are required" });
+    }
+
     await likeModel.create({ userId, postId });
 
-    const likes = await likeModel.find({ postId: postId });
-
-    const countLikes = likes?.length;
+    const countLikes = await likeModel.countDocuments({ postId });
 
     const updatedPost = await postsModel.findOneAndUpdate(
       { _id: postId },
@@ -99,29 +128,30 @@ async function handleLikePost(req, res) {
 
     return res
       .status(200)
-      .json({ message: "Successfully liked post", postId: updatedPost });
+      .json({ message: "Successfully liked post", updatedPost });
   } catch (error) {
-    return res.status(404).json({
-      message: "There was a problem liking the post",
-    });
+    return res.status(500).json({ message: "Error liking post", error });
   }
 }
 
+// Unlike a Post
 async function handleUnlikePost(req, res) {
-  const userId = req?.user?.userId;
-
-  const postId = req?.params?.postId;
-
   try {
-    const deletedLike = await likeModel.findOneAndDelete({
-      postId: postId,
-      userId: userId,
-    });
-    console.log(deletedLike);
+    const userId = req?.user?.userId;
+    const postId = req?.params?.postId;
 
-    const likes = await likeModel.find({ postId: postId });
+    if (!userId || !postId) {
+      return res
+        .status(400)
+        .json({ message: "User ID and Post ID are required" });
+    }
 
-    const countLikes = likes?.length;
+    const deletedLike = await likeModel.findOneAndDelete({ postId, userId });
+
+    if (!deletedLike)
+      return res.status(404).json({ message: "Like not found" });
+
+    const countLikes = await likeModel.countDocuments({ postId });
 
     const updatedPost = await postsModel.findOneAndUpdate(
       { _id: postId },
@@ -133,77 +163,98 @@ async function handleUnlikePost(req, res) {
       .status(200)
       .json({ message: "Successfully unliked post", updatedPost });
   } catch (error) {
-    return res.status(404).json({
-      message: "there was something wrong with unliking the post",
-    });
+    return res.status(500).json({ message: "Error unliking post", error });
   }
 }
 
+// Get all Likes on a Post
 async function handleGetAllLikes(req, res) {
-  // gets all likes on a post
-  const postId = req?.params?.postId;
-
   try {
-    const likes = await likeModel.find({ postId: postId });
+    const postId = req?.params?.postId;
+    if (!postId) {
+      return res.status(400).json({ message: "Post ID is required" });
+    }
+
+    const likes = await likeModel.find({ postId });
 
     return res
       .status(200)
       .json({ message: "Successfully fetched likes", likes });
   } catch (error) {
-    return res.status(404).json({
-      message: "There was a problem fetching all likes",
-    });
+    return res.status(500).json({ message: "Error retrieving likes", error });
   }
 }
 
-// Comments
+// Add a Comment
 async function handleAddComment(req, res) {
-  const userId = req?.user?.userId;
-  const postId = req?.params?.postId;
-  const { content } = req?.body;
   try {
+    const userId = req?.user?.userId;
+    const postId = req?.params?.postId;
+    const { content } = req?.body;
+
+    if (!userId || !postId || !content) {
+      return res
+        .status(400)
+        .json({ message: "User ID, Post ID, and content are required" });
+    }
+
     const comment = await commentModel.create({ userId, postId, content });
+
     return res
-      .status(200)
+      .status(201)
       .json({ message: "Successfully added comment", comment });
   } catch (error) {
-    return res.status(404).json({
-      message: "Unable to comment",
-    });
+    return res.status(500).json({ message: "Error adding comment", error });
   }
 }
-async function handleGetComments(req, res) {
-  // gets all comments on a post
-  const postId = req?.params?.postId;
 
+// Get all Comments on a Post
+async function handleGetComments(req, res) {
   try {
+    const postId = req?.params?.postId;
+    if (!postId) {
+      return res.status(400).json({ message: "Post ID is required" });
+    }
+
     const allComments = await commentModel.find({ postId });
+
     return res
       .status(200)
-      .json({ message: "Successfully got all comments", allComments });
+      .json({ message: "Successfully retrieved comments", allComments });
   } catch (error) {
-    return res.status(404).json({
-      message: "Error getting comments",
-    });
+    return res
+      .status(500)
+      .json({ message: "Error retrieving comments", error });
   }
 }
+
+// Delete a Comment
 async function handleDeleteComment(req, res) {
-  const userId = req?.user?.userId;
-  const postId = req?.params?.postId;
-  const commentId = req?.params?.commentId;
   try {
+    const userId = req?.user?.userId;
+    const postId = req?.params?.postId;
+    const commentId = req?.params?.commentId;
+
+    if (!userId || !postId || !commentId) {
+      return res
+        .status(400)
+        .json({ message: "User ID, Post ID, and Comment ID are required" });
+    }
+
     const deletedComment = await commentModel.findOneAndDelete({
       _id: commentId,
       postId,
       userId,
     });
+
+    if (!deletedComment)
+      return res.status(404).json({ message: "Comment not found" });
+
     return res
       .status(200)
       .json({ message: "Successfully deleted comment", deletedComment });
   } catch (error) {
-    return res.status(404).json({
-      message: "Problem deleting comment",
-    });
+    return res.status(500).json({ message: "Error deleting comment", error });
   }
 }
 

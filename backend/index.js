@@ -4,33 +4,34 @@ const http = require("http");
 
 const { restrictLoggedInUserOnly } = require("./middlewares/");
 const dbConnect = require("./connect");
+
 // Routers
 const userSignupLoginRouter = require("./routes/user");
 const postRouter = require("./routes/post");
 const notificationRouter = require("./routes/notification");
 const followRouter = require("./routes/follow");
 const chatRouter = require("./routes/chat");
+
 const { getUser } = require("./services/jwtAuth");
 
-// ------------------------------------------
+// Models
 const messageModel = require("./models/messages");
-const chatModel = require("./models/chat");
+
 // ------------------------------------------
 
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server, { cors: { origin: "http://localhost:5173" } });
 
-const PORT = 8000;
+const PORT = process.env.PORT || 8000;
 
-// Mongodb connect
+// Connect to MongoDB
 dbConnect()
-  .then(() => {
-    console.log("Connection successfully opened");
-  })
-  .catch(() => {
-    console.log("error connecting");
-  });
+  .then(() => console.log("✅ Database connected successfully"))
+  .catch((err) =>
+    console.error("❌ Error connecting to database:", err.message)
+  );
+
 // Middlewares
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
@@ -39,55 +40,75 @@ app.use(express.json());
 app.use("/api/auth", userSignupLoginRouter);
 app.use("/api/posts", restrictLoggedInUserOnly, postRouter);
 app.use("/api/chats", restrictLoggedInUserOnly, chatRouter);
-
 app.use("/api/notifications", notificationRouter);
 app.use("/api/users/:userId", followRouter);
 
+// Store connected users
 const users = {};
-// socket for messaging
+
+// Socket.io for messaging
 io.on("connection", (socket) => {
-  console.log(`User connected : ${socket.id}`);
+  console.log(`✅ User connected: ${socket.id}`);
 
-  // Register user on connection
+  try {
+    // Extract token and authenticate user
+    const token = socket.handshake.headers.authorization?.split("Bearer ")[1];
+    if (!token) {
+      console.log("❌ No token provided, disconnecting user...");
+      socket.disconnect();
+      return;
+    }
 
-  const token = socket.handshake.headers.authorization?.split("Bearer ")[1];
-  const { userId, email } = getUser(token);
+    const user = getUser(token);
+    if (!user || !user.userId) {
+      console.log("❌ Invalid or expired token, disconnecting user...");
+      socket.disconnect();
+      return;
+    }
 
-  if (!users[userId]) users[userId] = socket.id;
-  console.log(users);
+    const { userId } = user;
 
-  // When user sends message
+    // Register user with socket ID
+    users[userId] = socket.id;
+    console.log("Connected Users:", users);
 
-  // Handle sendMessage event
-  socket.on("sendMessage", async ({ receiverId, content }) => {
-    // taking the senderId from the header.authorization
-    const { userId: senderId, email } = getUser(
-      socket.handshake.headers.authorization.split("Bearer ")[1]
-    );
+    // Handle sendMessage event
+    socket.on("sendMessage", async ({ receiverId, content }) => {
+      try {
+        if (!receiverId || !content) {
+          return console.log("❌ Invalid message payload");
+        }
 
-    // creating a message
-    const latestMessage = await messageModel.create({
-      // chatId,
-      senderId,
-      receiverId,
-      content,
+        // Create new message
+        const latestMessage = await messageModel.create({
+          senderId: userId,
+          receiverId,
+          content,
+        });
+
+        console.log("📨 Message sent:", latestMessage);
+
+        // Send message to receiver if they are online
+        if (users[receiverId]) {
+          io.to(users[receiverId]).emit("receiveMessage", latestMessage);
+        }
+      } catch (error) {
+        console.error("❌ Error handling sendMessage event:", error.message);
+      }
     });
 
-    console.log(latestMessage);
-
-    // send the message to receiver with a particular socket id
-
-    io.to(users[receiverId]).emit("receiveMessage", latestMessage);
-  });
-
-  // Handle user disconnection
-  socket.on("disconnect", () => {
-    delete users[userId];
-    console.log(`User disconnected: ${socket.id}`);
-    console.log(users);
-  });
+    // Handle user disconnection
+    socket.on("disconnect", () => {
+      console.log(`❌ User disconnected: ${socket.id}`);
+      delete users[userId];
+    });
+  } catch (error) {
+    console.error("❌ Error in socket connection:", error.message);
+    socket.disconnect();
+  }
 });
 
-server.listen(PORT, (err) => {
-  console.log(`Server is running on Port ${PORT}`);
+// Start Server
+server.listen(PORT, () => {
+  console.log(`🚀 Server running on http://localhost:${PORT}`);
 });
