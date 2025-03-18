@@ -5,23 +5,21 @@ const {
   handleGetChatMessage,
   handleGetChats,
   handleStartChat,
-  handleSendMessage,
+  handleSendMessageOffline,
 } = require("../controllers/chat");
 
 const router = express.Router();
 
-router.route("/").post(handleStartChat).get(handleGetChats);
-router.route("/:chatId").get(handleGetChat);
+router.route("/").get(handleGetChats).post(handleStartChat);
+router.route("/:chatId").get(handleGetChat).post(handleSendMessageOffline);
 
-router
-  .route("/:chatId/messages")
-  .post(handleSendMessage)
-  .get(handleGetChatMessage);
+router.route("/:chatId/:messageId").get(handleGetChatMessage);
+// .post(handleSendMessage)
 
 module.exports = router;
 
-// POST /api/chats → Start a chat
 // GET /api/chats → Get user’s chats
+// POST /api/chats → Start a chat
 // GET /api/chats/:chatId → Get a specific chat
 // Message
 // POST /api/chats/:chatId/messages → Send a message
