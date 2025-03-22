@@ -8,10 +8,12 @@ const {
 
 const router = express.Router();
 
-router.route("/followers").get(handleGetFollowers);
-router.route("/following").get(handleGetFollowing);
-router.route("/follow").post(handleFollowUser);
-router.route("/unfollow").delete(handleUnfollowUser);
+router
+  .route("/:userId/follow")
+  .post(handleFollowUser)
+  .delete(handleUnfollowUser);
+router.route("/:userId/followers").get(handleGetFollowers);
+router.route("/:userId/following").get(handleGetFollowing);
 
 module.exports = router;
 

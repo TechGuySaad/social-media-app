@@ -39,9 +39,10 @@ app.use(express.json());
 // Routes
 app.use("/api/auth", userSignupLoginRouter);
 app.use("/api/posts", restrictLoggedInUserOnly, postRouter);
+app.use("/api/posts", restrictLoggedInUserOnly, postRouter);
 app.use("/api/chats", restrictLoggedInUserOnly, chatRouter);
 app.use("/api/notifications", notificationRouter);
-app.use("/api/users/:userId", followRouter);
+app.use("/api/users", restrictLoggedInUserOnly, followRouter);
 
 // Store connected users
 const users = {};
