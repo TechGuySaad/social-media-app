@@ -1,9 +1,11 @@
 import "./App.css";
-import CardComponent from "./components/CardComponent";
-import CreatePost from "./components/CreatePost";
-
+import Suggestions from "./components/Suggestions";
 function App() {
-  return <></>;
+  return (
+    <>
+      <Suggestions />
+    </>
+  );
 }
 
 export default App;
