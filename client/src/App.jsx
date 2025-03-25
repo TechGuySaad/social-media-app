@@ -1,9 +1,10 @@
 import "./App.css";
-import Suggestions from "./components/Suggestions";
+import ChatList from "./components/Chat/ChatList";
+
 function App() {
   return (
     <>
-      <Suggestions />
+      <ChatList />
     </>
   );
 }
