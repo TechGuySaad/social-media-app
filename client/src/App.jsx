@@ -1,12 +1,8 @@
 import "./App.css";
-import Conversation from "./components/Chat/Conversation";
 
 function App() {
-  return (
-    <>
-      <Conversation />
-    </>
-  );
+  // TODO: Profile page components left only and responsive components and login and signup page
+  return <>{/* <Conversation /> */}</>;
 }
 
 export default App;
