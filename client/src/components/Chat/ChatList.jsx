@@ -46,7 +46,7 @@ export default function ChatList() {
         flexGrow: 1,
         maxWidth: 328,
         border: "1px solid #e5e5e5",
-        height: 945,
+        maxHeight: "945px",
         borderRadius: "5px",
         padding: "10px",
       }}
@@ -80,8 +80,15 @@ export default function ChatList() {
           <ListItemText
             primary="Alex Johnson"
             secondary={" Hey how's it going?"}
+            sx={{
+              whiteSpace: "nowrap",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              display: "block",
+              maxWidth: 300,
+            }}
           />
-          <ListItemText secondary={"2h"} />
+          {/* <ListItemText secondary={"2h"} /> */}
 
           <Badge
             badgeContent={4}
@@ -118,8 +125,13 @@ export default function ChatList() {
           <ListItemText
             primary="Alex Johnson"
             secondary={" Hey how's it going?"}
+            sx={{
+              whiteSpace: "nowrap",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              display: "block",
+            }}
           />
-          <ListItemText secondary={"2h"} />
 
           <Badge
             badgeContent={4}
@@ -156,8 +168,13 @@ export default function ChatList() {
           <ListItemText
             primary="Alex Johnson"
             secondary={" Hey how's it going?"}
+            sx={{
+              whiteSpace: "nowrap",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              display: "block",
+            }}
           />
-          <ListItemText secondary={"2h"} />
 
           <Badge
             badgeContent={4}

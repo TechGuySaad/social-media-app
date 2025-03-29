@@ -1,74 +1,76 @@
 import React from "react";
-import { Box } from "@mui/material";
-import { Typography } from "@mui/material";
+import { Box, Typography, Button, TextField } from "@mui/material";
 import Chatbar from "./Chatbar";
-import Button from "@mui/material/Button";
-import TextField from "@mui/material/TextField";
+import ChatBubble from "./ChatBubble";
 
 const Conversation = () => {
   return (
     <Box
       sx={{
-        height: 945,
+        height: "85vh",
         maxWidth: 1000,
         bgcolor: "#fafafa",
         borderRadius: 2,
         p: 2,
-        overflow: "auto",
         display: "flex",
         flexDirection: "column",
-        justifyContent: "space-between",
-        gap: 1,
         border: "1px solid #e5e5e5",
       }}
     >
+      {/* Chat Header */}
       <Chatbar />
+
+      {/* Chat Messages Section - Consistent spacing */}
       <Box
         sx={{
+          flex: 1,
+          overflowY: "auto",
           display: "flex",
           flexDirection: "column",
-          width: "100%",
-          height: "100%",
+          px: 1,
+          mb: 1,
+          "& > *": {
+            marginTop: "4px !important", // Consistent top margin
+            marginBottom: "4px !important", // Consistent bottom margin
+          },
         }}
       >
-        {/* Sender's bubble */}
-
-        <Box
-          sx={{
-            maxWidth: "70%",
-            p: 1.5,
-            bgcolor: "primary.main",
-            color: "white",
-            borderRadius: 4,
-            borderBottomRightRadius: 0,
-            alignSelf: "flex-end",
-          }}
-        >
-          <Typography>Hey, how’s the project going?</Typography>
-        </Box>
-
-        {/* Receiver's bubble */}
-        <Box
-          sx={{
-            maxWidth: "70%",
-            p: 1.5,
-            bgcolor: "grey.300",
-            borderRadius: 4,
-            borderBottomLeftRadius: 0,
-          }}
-        >
-          <Typography>Almost done! Will share updates soon.</Typography>
-        </Box>
+        {/* Additional bubbles - all will have consistent spacing */}
+        <ChatBubble isSender={true} />
+        <ChatBubble isSender={false} />
+        <ChatBubble isSender={true} />
+        <ChatBubble />
+        <ChatBubble isSender={true} />
+        <ChatBubble />
+        <ChatBubble isSender={true} />
+        <ChatBubble />
+        <ChatBubble isSender={true} />
+        <ChatBubble />
+        <ChatBubble isSender={true} />
+        <ChatBubble />
+        <ChatBubble isSender={true} />
+        <ChatBubble />
+        <ChatBubble isSender={true} />
+        <ChatBubble />
+        <ChatBubble isSender={true} />
+        <ChatBubble />
+        <ChatBubble isSender={true} />
+        <ChatBubble />
+        <ChatBubble isSender={true} />
+        <ChatBubble />
       </Box>
+
+      {/* Chat Input Section */}
       <Box
         sx={{
           display: "flex",
           width: "100%",
           justifyContent: "space-between",
           alignItems: "center",
-          columnGap: "10px",
+          gap: 2,
+          pt: 2,
           borderTop: "1px solid #e5e5e5",
-          padding: "15px",
+          flexShrink: 0,
         }}
       >
         <TextField
@@ -76,9 +78,8 @@ const Conversation = () => {
           label="Type a message"
           multiline
           maxRows={4}
-          sx={{ width: "100%" }}
+          sx={{ flex: 1 }}
         />
-
         <Button variant="contained" sx={{ backgroundColor: "black" }}>
           Send
         </Button>

@@ -1,8 +1,8 @@
 import React from "react";
-import CardComponent from "../components/Home/CardComponent";
-import CreatePost from "../components/Home/CreatePost";
-import Sidebar from "../components/Home/Sidebar";
-import Suggestions from "../components/Home/Suggestions";
+import CardComponent from "../../components/Home/CardComponent";
+import CreatePost from "../../components/Home/CreatePost";
+import Sidebar from "../../components/Home/Sidebar";
+import Suggestions from "../../components/Home/Suggestions";
 import "./styles/style.css";
 const Home = () => {
   return (
