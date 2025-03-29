@@ -1,0 +1,18 @@
+.home-container {
+  max-width: 1400px;
+  width: 100%;
+  /* background-color: black; */
+  display: grid;
+  grid-template-columns: 1fr minmax(400px, 675px) 1fr;
+  column-gap: 20px;
+  margin: 0 auto; /* Centers the container */
+  padding-top: 50px;
+  height: 100vh;
+}
+
+.posts {
+  display: flex;
+  flex-direction: column;
+  row-gap: 20px;
+  overflow-y: scroll;
+}

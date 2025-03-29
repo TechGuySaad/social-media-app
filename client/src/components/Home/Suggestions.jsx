@@ -2,14 +2,12 @@ import * as React from "react";
 import Box from "@mui/material/Box";
 import List from "@mui/material/List";
 import ListItem from "@mui/material/ListItem";
-import ListItemButton from "@mui/material/ListItemButton";
+
 import Avatar from "@mui/material/Avatar";
-import ListItemIcon from "@mui/material/ListItemIcon";
+
 import ListItemText from "@mui/material/ListItemText";
 import { Button } from "@mui/material";
-import profileImage from "../assets/images/1738500336291.jpeg";
-
-import AccountCircleIcon from "@mui/icons-material/AccountCircle";
+import profileImage from "../../assets/images/1738500336291.jpeg";
 
 export default function Suggestions() {
   return (
@@ -17,8 +15,9 @@ export default function Suggestions() {
       sx={{
         width: "100%",
         maxWidth: 375,
+        height: 200,
         bgcolor: "background.paper",
-        border: "1px solid rgba(189, 189, 189, 0.94)",
+        border: "1px solid #eaeaea",
         padding: "10px",
         borderRadius: "5px",
       }}

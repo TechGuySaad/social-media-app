@@ -13,13 +13,16 @@ export default function CreatePost() {
   return (
     <Card
       sx={{
-        maxWidth: 575,
+        maxWidth: "675px",
+        width: "100%",
+
         border: "2px solid #eaeaea",
         padding: "10px",
-        height: 168,
+        minHeight: 168,
         display: "flex",
         flexDirection: "column",
         justifyContent: "space-between",
+        margin: "0 auto",
       }}
       elevation={0}
     >

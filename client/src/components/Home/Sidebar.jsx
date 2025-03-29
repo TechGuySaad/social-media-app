@@ -12,7 +12,14 @@ import GroupIcon from "@mui/icons-material/Group";
 
 export default function Sidebar() {
   return (
-    <Box sx={{ width: "100%", maxWidth: 375, bgcolor: "background.paper" }}>
+    <Box
+      sx={{
+        width: "100%",
+        maxWidth: 375,
+        bgcolor: "background.paper",
+        borderRight: "1px solid #eaeaea",
+      }}
+    >
       <nav aria-label="main mailbox folders">
         <List>
           <ListItem disablePadding>
