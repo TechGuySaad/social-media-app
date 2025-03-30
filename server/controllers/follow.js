@@ -1,5 +1,6 @@
 const followModel = require("../models/follows");
 const userModel = require("../models/user");
+
 async function handleFollowUser(req, res) {
   try {
     const followerId = req.user?.userId;

@@ -7,8 +7,8 @@ const ChatBubble = ({ message, isSender }) => {
       sx={{
         maxWidth: "75%",
         p: 1.5,
-        bgcolor: isSender ? "primary.main" : "black", // Different colors
-        color: "white",
+        bgcolor: isSender ? "grey.200" : "black", // Different colors
+        color: isSender ? "black" : "white",
         borderRadius: 2,
         // Distinct border radius for each type
         borderBottomRightRadius: isSender ? 0 : 8,

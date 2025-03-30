@@ -1,4 +1,5 @@
 const express = require("express");
+
 const {
   handleCreatePost,
   handleEditPost,
@@ -14,10 +15,28 @@ const {
   handleGetAllLikes,
   handleDeleteComment,
 } = require("../controllers/post");
+const multer = require("multer");
+const path = require("path");
 
 const router = express.Router();
 
-router.route("/").post(handleCreatePost).get(handleGetPosts);
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    const uploadDir = path.join(__dirname, "../uploads/posts");
+    require("fs").mkdirSync(uploadDir, { recursive: true });
+    cb(null, uploadDir);
+  },
+  filename: function (req, file, cb) {
+    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
+    cb(null, "media-" + uniqueSuffix + path.extname(file.originalname));
+  },
+});
+
+const upload = multer({ storage: storage });
+router
+  .route("/")
+  .post(upload.single("media"), handleCreatePost)
+  .get(handleGetPosts);
 
 router
   .route("/:postId")

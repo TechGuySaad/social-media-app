@@ -8,14 +8,78 @@ import { Box } from "@mui/material";
 import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
 import PhotoOutlinedIcon from "@mui/icons-material/PhotoOutlined";
+import axios from "axios";
+import { useState, useRef } from "react";
 
-export default function CreatePost() {
+export default function CreatePost({ newPost, setNewPost }) {
+  const [postContent, setPostContent] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [selectedFile, setSelectedFile] = useState(null);
+  const fileInputRef = useRef(null);
+
+  const handlePictureButtonClick = () => {
+    fileInputRef.current.click();
+  };
+
+  const handleFileChange = (event) => {
+    setSelectedFile(event.target.files[0]);
+  };
+
+  const handleChange = (event) => {
+    setPostContent(event.target.value);
+    setError(null);
+  };
+
+  const handleSubmit = async () => {
+    if (!postContent.trim()) {
+      setError("Post content cannot be empty");
+      return;
+    }
+
+    try {
+      setIsLoading(true);
+
+      const formData = new FormData();
+      formData.append("content", postContent);
+
+      if (selectedFile) {
+        formData.append("media", selectedFile);
+      }
+
+      const response = await axios.post(
+        "http://localhost:8000/api/posts/",
+        formData,
+        {
+          headers: {
+            Authorization: await localStorage.getItem("authToken"),
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+
+      setNewPost(response?.data?.newPost);
+      setPostContent("");
+      setSelectedFile(null);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = ""; // Reset file input
+      }
+    } catch (err) {
+      console.error("Error creating post:", err);
+      setError(
+        err.response?.data?.message ||
+          "Failed to create post. Please try again."
+      );
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <Card
       sx={{
         maxWidth: "675px",
         width: "100%",
-
         border: "2px solid #eaeaea",
         padding: "10px",
         minHeight: 168,
@@ -41,33 +105,33 @@ export default function CreatePost() {
           }
         />
         <TextField
-          id="outlined-basic"
+          id="post-content"
           label="What's on your mind?"
           variant="outlined"
           fullWidth
-          multiline // Enables multiline (textarea-like)
-          rows={3} // Sets default visible rows (controls height)
+          multiline
+          rows={3}
+          value={postContent}
+          onChange={handleChange}
+          error={!!error}
+          helperText={error}
           sx={{
-            // Customize the label color (black by default, but explicitly set for consistency)
             "& .MuiInputLabel-root": {
-              color: "black", // Label text color (default state)
+              color: "black",
             },
-            // Customize the border on focus (from previous solution)
             "& .MuiOutlinedInput-root": {
               "& fieldset": {
                 border: "0",
-                // borderColor: "grey.300", // Default border
               },
               "&:hover fieldset": {
-                borderColor: "grey.500", // Hover border (optional)
+                borderColor: "grey.500",
               },
               "&.Mui-focused fieldset": {
-                borderColor: "black", // Focused border
+                borderColor: "black",
               },
             },
-            // Optional: Ensure the input text is also black
             "& .MuiInputBase-input": {
-              color: "black", // Text color inside the input
+              color: "black",
             },
           }}
         />
@@ -82,19 +146,39 @@ export default function CreatePost() {
           alignItems: "center",
         }}
       >
-        <Button
-          sx={{
-            "&:hover": {
-              color: "black", // Optional: Change text color to white
-            },
-          }}
-          startIcon={<PhotoOutlinedIcon />}
-        >
-          Photo
-        </Button>
+        <div>
+          <input
+            type="file"
+            ref={fileInputRef}
+            style={{ display: "none" }}
+            onChange={handleFileChange}
+            accept="image/*,video/*"
+          />
+          <Button
+            onClick={handlePictureButtonClick}
+            sx={{
+              "&:hover": {
+                color: "black",
+              },
+            }}
+            startIcon={<PhotoOutlinedIcon />}
+          >
+            Photo
+          </Button>
+          {selectedFile && (
+            <span style={{ marginLeft: "10px" }}>
+              {selectedFile.name} ({Math.round(selectedFile.size / 1024)} KB)
+            </span>
+          )}
+        </div>
 
-        <Button variant="contained" sx={{ backgroundColor: "black" }}>
-          Post
+        <Button
+          variant="contained"
+          sx={{ backgroundColor: "black" }}
+          onClick={handleSubmit}
+          disabled={!postContent || isLoading}
+        >
+          {isLoading ? "Posting..." : "Post"}
         </Button>
       </CardActions>
     </Card>

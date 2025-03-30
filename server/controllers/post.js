@@ -1,24 +1,115 @@
 const postsModel = require("../models/posts");
 const likeModel = require("../models/likes");
 const commentModel = require("../models/comment");
+const userModel = require("../models/user");
+const followModel = require("../models/follows");
+const fs = require("fs");
+const path = require("path");
+const multer = require("multer");
 
-// Create a Post
 async function handleCreatePost(req, res) {
   try {
     const { content } = req.body;
-    const userId = req?.user?.userId;
+    const { userId, firstName, lastName } = req.user;
+    const mediaFile = req.file;
 
-    if (!userId || !content) {
-      return res
-        .status(400)
-        .json({ message: "User ID and content are required" });
+    // Validate required fields
+    if (!userId) {
+      return res.status(400).json({
+        success: false,
+        message: "User ID is required",
+      });
     }
 
-    const newPost = await postsModel.create({ userId, content });
+    // At least content or media file must be provided
+    if (!content && !mediaFile) {
+      return res.status(400).json({
+        success: false,
+        message: "Either content or a media file is required",
+      });
+    }
 
-    return res.status(201).json({ message: "Successfully posted", newPost });
+    // Prepare post data
+    const postData = {
+      userId,
+      firstName,
+      lastName,
+      content: content || "",
+    };
+
+    // Handle media file if present
+    if (mediaFile) {
+      // Validate file type
+      const allowedTypes = [
+        "image/jpeg",
+        "image/png",
+        "image/gif",
+        "video/mp4",
+      ];
+      if (!allowedTypes.includes(mediaFile.mimetype)) {
+        // Remove the uploaded file since it's invalid
+        fs.unlinkSync(mediaFile.path);
+        return res.status(400).json({
+          success: false,
+          message: "Only JPEG, PNG, GIF images and MP4 videos are allowed",
+        });
+      }
+
+      postData.mediaUrl = `/uploads/posts/${mediaFile.filename}`;
+      postData.mediaType = mediaFile.mimetype.startsWith("image")
+        ? "image"
+        : "video";
+    }
+
+    // Create post in database
+    const newPost = await postsModel.create(postData);
+
+    // Return success response
+    return res.status(201).json({
+      success: true,
+      message: "Post created successfully",
+      post: {
+        ...newPost.toObject(),
+        fullMediaUrl: newPost.mediaUrl
+          ? `${req.protocol}://${req.get("host")}${newPost.mediaUrl}`
+          : null,
+      },
+    });
   } catch (error) {
-    return res.status(500).json({ message: "Error creating post", error });
+    console.error("Error creating post:", error);
+
+    // Clean up uploaded file if an error occurred
+    if (req.file) {
+      fs.unlinkSync(req.file.path);
+    }
+
+    // Handle multer errors
+    if (error instanceof multer.MulterError) {
+      return res.status(error.code === "LIMIT_FILE_SIZE" ? 413 : 400).json({
+        success: false,
+        message:
+          error.code === "LIMIT_FILE_SIZE"
+            ? "File too large. Maximum size is 25MB"
+            : "File upload error",
+        error: error.message,
+      });
+    }
+
+    // Handle mongoose validation errors
+    if (error.name === "ValidationError") {
+      return res.status(400).json({
+        success: false,
+        message: "Validation error",
+        error: error.message,
+      });
+    }
+
+    // Handle other errors
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error while creating post",
+      error: error.message,
+    });
   }
 }
 
@@ -30,13 +121,26 @@ async function handleGetPosts(req, res) {
       return res.status(400).json({ message: "User ID is required" });
     }
 
-    const posts = await postsModel.find({ userId });
+    const followingIds = await followModel.distinct("followingId", {
+      followerId: userId,
+    });
 
-    return res
-      .status(200)
-      .json({ message: "Successfully retrieved posts", posts });
+    const targetUserIds = [userId, ...followingIds];
+    const posts = await postsModel
+      .find({
+        userId: { $in: targetUserIds },
+      })
+      .sort({ createdAt: -1 });
+
+    return res.status(200).json({
+      message: "Successfully retrieved posts",
+
+      posts,
+    });
   } catch (error) {
-    return res.status(500).json({ message: "Error retrieving posts", error });
+    return res
+      .status(500)
+      .json({ message: "Error retrieving posts", error: error.message });
   }
 }
 

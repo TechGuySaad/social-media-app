@@ -1,6 +1,8 @@
 const express = require("express");
 const { Server } = require("socket.io");
 const http = require("http");
+const cors = require("cors");
+const path = require("path");
 
 const { restrictLoggedInUserOnly } = require("./middlewares/");
 const dbConnect = require("./connect");
@@ -33,8 +35,19 @@ dbConnect()
   );
 
 // Middlewares
+const corsOptions = {
+  origin: "http://localhost:5173", // Your frontend origin
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+  exposedHeaders: ["Authorization"], // Expose Authorization header
+  credentials: true, // This is crucial for withCredentials to work
+};
+
+app.use(cors(corsOptions));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
+// Serve static files from uploads directory
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 // Routes
 app.use("/api/auth", userSignupLoginRouter);

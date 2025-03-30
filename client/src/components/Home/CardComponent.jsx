@@ -12,15 +12,18 @@ import { red } from "@mui/material/colors";
 import FavoriteIcon from "@mui/icons-material/Favorite";
 import ShareIcon from "@mui/icons-material/Share";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
-import webDevImage from "../../assets/images/web-dev.jpg";
+
 import CommentIcon from "@mui/icons-material/Comment";
 
-export default function CardComponent() {
+export default function CardComponent({ post }) {
+  const imgPath = `http://localhost:8000${post?.mediaUrl}`;
+  // console.log(post);
   return (
     <Card
       sx={{
         maxWidth: "675px",
-        minHeight: "740px",
+        // minHeight: "740px",
+        minHeight: post?.mediaUrl ? "740px" : "fit-content",
         width: "100%", // Ensures it can grow to m
         border: "1px solid #eaeaea",
         padding: "0px 10px",
@@ -30,7 +33,7 @@ export default function CardComponent() {
       <CardHeader
         avatar={
           <Avatar sx={{ bgcolor: red[500] }} aria-label="recipe">
-            A
+            {post.firstName[0]}
           </Avatar>
         }
         action={
@@ -38,22 +41,18 @@ export default function CardComponent() {
             <MoreVertIcon />
           </IconButton>
         }
-        title="Alex Johnson"
+        title={`${post.firstName} ${post.lastName}`}
         subheader="2h"
       />
 
       <CardContent>
         <Typography variant="body2" sx={{ color: "text.secondary" }}>
-          Just launched my new portfolio website! Check it out and let me know
-          what you think. #webdev #portfolio
+          {post?.content}
         </Typography>
       </CardContent>
-      <CardMedia
-        component="img"
-        height="542"
-        image={webDevImage}
-        alt="Web Dev"
-      />
+      {post?.mediaUrl && (
+        <CardMedia component="img" height="542" image={imgPath} alt="Web Dev" />
+      )}
       <CardActions disableSpacing>
         <IconButton aria-label="add to favorites">
           <FavoriteIcon />

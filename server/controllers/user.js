@@ -63,7 +63,12 @@ async function handleUserLogin(req, res) {
       return res.status(401).json({ message: "Invalid credentials" });
     }
 
-    const token = setUser({ userId: user._id, email: user.email });
+    const token = setUser({
+      userId: user._id,
+      email: user.email,
+      firstName: user.firstName,
+      lastName: user.lastName,
+    });
 
     return res
       .header("Authorization", `Bearer ${token}`)
