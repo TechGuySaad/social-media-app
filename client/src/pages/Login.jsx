@@ -31,7 +31,7 @@ const SubmitButton = styled(Button)(({ theme }) => ({
   margin: theme.spacing(3, 0, 2),
 }));
 
-const Login = () => {
+const Login = ({ user, setUser }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -71,6 +71,9 @@ const Login = () => {
       const token = response.headers["authorization"];
 
       localStorage.setItem("authToken", token);
+
+      console.log(response.data.user);
+      setUser(response.data.user);
 
       navigate("/");
     } catch (err) {

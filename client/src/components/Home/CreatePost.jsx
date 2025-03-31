@@ -11,7 +11,7 @@ import PhotoOutlinedIcon from "@mui/icons-material/PhotoOutlined";
 import axios from "axios";
 import { useState, useRef } from "react";
 
-export default function CreatePost({ newPost, setNewPost }) {
+export default function CreatePost({ newPost, setNewPost, user }) {
   const [postContent, setPostContent] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -99,9 +99,11 @@ export default function CreatePost({ newPost, setNewPost }) {
       >
         <CardHeader
           avatar={
-            <Avatar sx={{ bgcolor: red[500] }} aria-label="recipe">
-              A
-            </Avatar>
+            <Avatar
+              sx={{ bgcolor: red[500] }}
+              aria-label="recipe"
+              src={`http://localhost:8000${user.pfp}`}
+            />
           }
         />
         <TextField

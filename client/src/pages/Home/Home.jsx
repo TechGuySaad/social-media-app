@@ -6,7 +6,7 @@ import Suggestions from "../../components/Home/Suggestions";
 import "./styles/style.css";
 import { useEffect, useState } from "react";
 import axios from "axios";
-const Home = () => {
+const Home = ({ user }) => {
   const [posts, setPosts] = useState([]);
   const [newPost, setNewPost] = useState("");
 
@@ -31,7 +31,7 @@ const Home = () => {
       <div className="home-container">
         <Sidebar />
         <div className="posts">
-          <CreatePost newPost={newPost} setNewPost={setNewPost} />
+          <CreatePost newPost={newPost} setNewPost={setNewPost} user={user} />
           {posts.map((post) => {
             return <CardComponent key={post._id} post={post} />;
           })}

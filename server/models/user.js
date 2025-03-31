@@ -16,12 +16,13 @@ const userSchema = new mongoose.Schema(
       required: true,
       unique: true,
     },
+
     password: {
       type: String,
       required: true,
     },
 
-    profilePicture: { type: String, default: "this is profile picture" },
+    profilePicture: { type: String },
     bio: { type: String },
   },
   { timestamps: true }

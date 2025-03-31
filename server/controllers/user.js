@@ -4,29 +4,29 @@ const bcrypt = require("bcrypt");
 
 // User Signup
 async function handleUserSignup(req, res) {
+  // console.log(req.body);
+  // console.log(req.file);
+  const filePath = "/" + req?.file?.path.replace(/\\/g, "/"); // Normalize for cross-platform
+
   try {
     const { firstName, lastName, email, password, bio } = req?.body;
-
     if (!firstName || !lastName || !email || !password) {
       return res.status(400).json({ message: "All fields are required" });
     }
-
     const existingUser = await userModel.findOne({ email });
     if (existingUser) {
       return res.status(409).json({ message: "User already exists" });
     }
-
     const saltRounds = 10;
     const hashPassword = await bcrypt.hash(password, saltRounds);
-
     const user = await userModel.create({
       firstName,
       lastName,
       email,
       bio,
+      profilePicture: filePath,
       password: hashPassword,
     });
-
     return res.status(201).json({
       status: "success",
       message: "Successfully signed up",
@@ -68,6 +68,7 @@ async function handleUserLogin(req, res) {
       email: user.email,
       firstName: user.firstName,
       lastName: user.lastName,
+      pfp: user.profilePicture,
     });
 
     return res
@@ -76,7 +77,7 @@ async function handleUserLogin(req, res) {
       .json({
         message: "Login successful",
         token,
-        user: { id: user._id, email },
+        user: { id: user._id, email, pfp: user.profilePicture },
       });
   } catch (error) {
     return res
